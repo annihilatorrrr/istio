@@ -160,8 +160,6 @@ def trace():
 
 
 def getForwardHeaders(request):
-    headers = {}
-
     # x-b3-*** headers can be populated using the opentracing span
     span = get_current_span()
     carrier = {}
@@ -170,8 +168,7 @@ def getForwardHeaders(request):
         format=Format.HTTP_HEADERS,
         carrier=carrier)
 
-    headers.update(carrier)
-
+    headers = {} | carrier
     # We handle other (non x-b3-***) headers manually
     if 'user' in session:
         headers['end-user'] = session['user']
@@ -367,10 +364,7 @@ def getProducts():
 
 def getProduct(product_id):
     products = getProducts()
-    if product_id + 1 > len(products):
-        return None
-    else:
-        return products[product_id]
+    return None if product_id + 1 > len(products) else products[product_id]
 
 
 def getProductDetails(product_id, headers):
@@ -381,9 +375,8 @@ def getProductDetails(product_id, headers):
         res = None
     if res and res.status_code == 200:
         return 200, res.json()
-    else:
-        status = res.status_code if res is not None and res.status_code else 500
-        return status, {'error': 'Sorry, product details are currently unavailable for this book.'}
+    status = res.status_code if res is not None and res.status_code else 500
+    return status, {'error': 'Sorry, product details are currently unavailable for this book.'}
 
 
 def getProductReviews(product_id, headers):
@@ -409,9 +402,8 @@ def getProductRatings(product_id, headers):
         res = None
     if res and res.status_code == 200:
         return 200, res.json()
-    else:
-        status = res.status_code if res is not None and res.status_code else 500
-        return status, {'error': 'Sorry, product ratings are currently unavailable for this book.'}
+    status = res.status_code if res is not None and res.status_code else 500
+    return status, {'error': 'Sorry, product ratings are currently unavailable for this book.'}
 
 
 class Writer(object):
@@ -427,11 +419,11 @@ class Writer(object):
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        logging.error("usage: %s port" % (sys.argv[0]))
+        logging.error(f"usage: {sys.argv[0]} port")
         sys.exit(-1)
 
     p = int(sys.argv[1])
-    logging.info("start at port %s" % (p))
+    logging.info(f"start at port {p}")
     # Make it compatible with IPv6 if Linux
     if sys.platform == "linux":
         app.run(host='::', port=p, debug=True, threaded=True)
